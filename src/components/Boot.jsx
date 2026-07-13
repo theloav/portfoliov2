@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 
 const LINES = [
   'initializing secure console...',
-  'loading operator profile: theloav',
+  'loading operator profile: shrivarshan',
   'mounting threat-intel feed... ok',
   'decrypting portfolio payload... ok',
   'access granted — welcome, operator',

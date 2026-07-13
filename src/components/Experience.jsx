@@ -1,15 +1,29 @@
+import { useRef } from 'react'
+import { motion, useScroll, useSpring } from 'framer-motion'
 import SectionTitle from './SectionTitle'
 import Reveal from './Reveal'
 import { EXPERIENCE } from '../data'
 
 export default function Experience() {
+  const railRef = useRef(null)
+  // The timeline rail literally draws itself as you scroll through the log.
+  const { scrollYProgress } = useScroll({
+    target: railRef,
+    offset: ['start 78%', 'end 55%'],
+  })
+  const scaleY = useSpring(scrollYProgress, { stiffness: 120, damping: 24, mass: 0.4 })
+
   return (
     <section id="experience" className="relative mx-auto max-w-5xl scroll-mt-24 px-5 py-28">
       <SectionTitle index="03" eyebrow="mission log" title="Field" highlight="Operations" />
 
-      <div className="relative">
-        {/* timeline rail */}
-        <div className="absolute left-2 top-1 bottom-1 w-px bg-gradient-to-b from-term/50 via-white/10 to-transparent" />
+      <div ref={railRef} className="relative">
+        {/* timeline rail — faint track + scroll-drawn glow */}
+        <div className="absolute left-2 top-1 bottom-1 w-px bg-white/[0.07]" />
+        <motion.div
+          style={{ scaleY }}
+          className="absolute left-2 top-1 bottom-1 w-px origin-top bg-gradient-to-b from-term via-cyan to-term/30 shadow-glow-term"
+        />
 
         <div className="space-y-8">
           {EXPERIENCE.map((exp, i) => (

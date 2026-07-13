@@ -10,7 +10,8 @@ export default function Skills() {
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {SKILLS.map((cat, i) => (
           <Reveal key={cat.title} delay={(i % 3) * 0.08}>
-            <div className="group panel h-full p-6 transition-colors duration-300 hover:border-term/30">
+            <div className="group panel relative h-full overflow-hidden p-6 transition-all duration-300 hover:-translate-y-1 hover:border-term/30">
+              <span aria-hidden className="card-scan" />
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-display text-lg font-semibold text-slate-100">{cat.title}</h3>
                 <span className="font-mono text-xs text-muted">
