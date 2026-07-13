@@ -56,7 +56,11 @@ export default function CustomCursor() {
 
   return (
     <>
-      <div ref={ringRef} className="cursor-ring" aria-hidden="true" />
+      {/* viewfinder frame: four corner brackets that lag behind the crosshair */}
+      <div ref={ringRef} className="cursor-ring" aria-hidden="true">
+        <i /><i /><i /><i />
+      </div>
+      {/* center crosshair "+" */}
       <div ref={dotRef} className="cursor-dot" aria-hidden="true" />
     </>
   )

@@ -15,6 +15,7 @@ import Achievements from './components/Achievements'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
 import Marquee from './components/Marquee'
+import CyberBackground from './components/CyberBackground'
 
 // Each section isolated: a throw in one can never blank the others.
 function Guarded({ name, children }) {
@@ -61,6 +62,9 @@ export default function App() {
       </ErrorBoundary>
       <ErrorBoundary name="cursor">
         <CustomCursor />
+      </ErrorBoundary>
+      <ErrorBoundary name="cyber-bg">
+        <CyberBackground />
       </ErrorBoundary>
       <ErrorBoundary name="hud">
         <Hud />

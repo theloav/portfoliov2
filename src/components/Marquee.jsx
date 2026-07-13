@@ -51,7 +51,7 @@ export default function Marquee({ text, accent, baseVelocity = 1.4 }) {
     >
       <motion.div
         style={reduced ? undefined : { x, skewX }}
-        className="flex whitespace-nowrap will-change-transform"
+        className="flex w-max whitespace-nowrap will-change-transform"
       >
         {[0, 1, 2, 3].map((i) => (
           <span

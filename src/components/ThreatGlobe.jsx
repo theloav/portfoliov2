@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, PerformanceMonitor } from '@react-three/drei'
+import { OrbitControls, PerformanceMonitor, Stars } from '@react-three/drei'
 import * as THREE from 'three'
 import ThreeGlobe from 'three-globe'
 import countries from '../assets/countries.json'
@@ -57,12 +57,19 @@ function GlobeMesh() {
       // attack arcs — animated dash "travels" along the line
       .arcsData(arcs)
       .arcColor(() => ['rgba(0,255,156,0)', '#00ff9c', 'rgba(56,194,255,0.1)'])
-      .arcStroke(0.45)
+      .arcStroke(0.5)
       .arcDashLength(0.45)
       .arcDashGap(1.6)
       .arcDashInitialGap(() => Math.random() * 5)
       .arcDashAnimateTime(2200)
       .arcAltitudeAutoScale(0.45)
+      // radar impact rings pulsing out of every city (orange at home base)
+      .ringsData(NODES.map((n) => ({ ...n, rgb: n.color === '#ff6b3d' ? '255,107,61' : '0,255,156' })))
+      .ringColor((d) => (t) => `rgba(${d.rgb},${Math.max(0, 0.55 * (1 - t))})`)
+      .ringMaxRadius(3.6)
+      .ringPropagationSpeed(1.1)
+      .ringRepeatPeriod(() => 1100 + Math.random() * 900)
+      .ringAltitude(0.011)
 
     // Dark ocean material.
     const mat = g.globeMaterial()
@@ -103,6 +110,8 @@ export default function ThreatGlobe({ active = true }) {
       />
       <ambientLight intensity={2.2} color="#c9ddff" />
       <directionalLight position={[1, 1, 1]} intensity={1.1} color="#ffffff" />
+      {/* faint starfield drifting behind the earth */}
+      <Stars radius={300} depth={60} count={1400} factor={3.2} saturation={0} fade speed={0.5} />
       <GlobeMesh />
       {/* Drag to spin (left or right button); idle auto-rotate; no zoom/pan so the page still scrolls. */}
       <OrbitControls
