@@ -1,36 +1,82 @@
-export default function App() {
+import { useState } from 'react'
+import { AnimatePresence } from 'framer-motion'
+import ErrorBoundary from './components/ErrorBoundary'
+import SmoothScroll from './components/SmoothScroll'
+import CustomCursor from './components/CustomCursor'
+import Hud from './components/Hud'
+import Boot from './components/Boot'
+import Nav from './components/Nav'
+import Hero from './components/Hero'
+import About from './components/About'
+import Skills from './components/Skills'
+import Experience from './components/Experience'
+import Projects from './components/Projects'
+import Achievements from './components/Achievements'
+import Contact from './components/Contact'
+import Footer from './components/Footer'
+
+// Each section isolated: a throw in one can never blank the others.
+function Guarded({ name, children }) {
+  return <ErrorBoundary name={name}>{children}</ErrorBoundary>
+}
+
+function Site() {
   return (
-    <main className="hud-grid relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6">
-      {/* animated scanline sweep */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-40">
-        <div className="absolute inset-x-0 h-24 bg-gradient-to-b from-transparent via-cyan/10 to-transparent animate-scan" />
-      </div>
+    <div className="relative">
+      <Guarded name="nav"><Nav /></Guarded>
+      <main>
+        <Guarded name="hero"><Hero /></Guarded>
+        <Guarded name="about"><About /></Guarded>
+        <Guarded name="skills"><Skills /></Guarded>
+        <Guarded name="experience"><Experience /></Guarded>
+        <Guarded name="projects"><Projects /></Guarded>
+        <Guarded name="achievements"><Achievements /></Guarded>
+        <Guarded name="contact"><Contact /></Guarded>
+      </main>
+      <Guarded name="footer"><Footer /></Guarded>
+    </div>
+  )
+}
 
-      <div className="relative z-10 text-center">
-        <p className="font-mono text-xs tracking-[0.35em] text-term/80">
-          [ SYSTEM ONLINE ]
-        </p>
+export default function App() {
+  const [booted, setBooted] = useState(
+    () => typeof sessionStorage !== 'undefined' && sessionStorage.getItem('booted_v2') === '1'
+  )
 
-        <h1 className="mt-6 font-display text-5xl font-bold tracking-tight text-slate-50 sm:text-7xl">
-          SHRIVARSHAN
-        </h1>
+  return (
+    <>
+      {/* Every decorative/heavy piece is isolated — a crash can never blank the page. */}
+      <ErrorBoundary name="smooth-scroll">
+        <SmoothScroll />
+      </ErrorBoundary>
+      <ErrorBoundary name="cursor">
+        <CustomCursor />
+      </ErrorBoundary>
+      <ErrorBoundary name="hud">
+        <Hud />
+      </ErrorBoundary>
 
-        <p className="mt-4 font-mono text-sm text-cyan text-glow-cyan sm:text-base">
-          Security Engineer · Offensive Security Operator
-        </p>
+      <ErrorBoundary name="boot">
+        <AnimatePresence>
+          {!booted && (
+            <Boot
+              key="boot"
+              onDone={() => {
+                try {
+                  sessionStorage.setItem('booted_v2', '1')
+                } catch {
+                  /* ignore */
+                }
+                setBooted(true)
+              }}
+            />
+          )}
+        </AnimatePresence>
+      </ErrorBoundary>
 
-        <div className="mx-auto mt-8 h-px w-40 bg-gradient-to-r from-transparent via-term/60 to-transparent" />
-
-        <p className="mt-8 font-mono text-xs tracking-[0.3em] text-muted animate-flicker">
-          BOOTING OPERATOR CONSOLE — v2 BUILD IN PROGRESS
-        </p>
-      </div>
-
-      {/* corner HUD ticks */}
-      <span className="pointer-events-none absolute left-6 top-6 h-6 w-6 border-l border-t border-term/40" />
-      <span className="pointer-events-none absolute right-6 top-6 h-6 w-6 border-r border-t border-term/40" />
-      <span className="pointer-events-none absolute bottom-6 left-6 h-6 w-6 border-b border-l border-term/40" />
-      <span className="pointer-events-none absolute bottom-6 right-6 h-6 w-6 border-b border-r border-term/40" />
-    </main>
+      <ErrorBoundary name="site">
+        <Site />
+      </ErrorBoundary>
+    </>
   )
 }
