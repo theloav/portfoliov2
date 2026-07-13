@@ -4,6 +4,7 @@ import { FiMail, FiGithub, FiLinkedin, FiMapPin, FiSend, FiCheckCircle, FiAlertC
 import { FaMediumM } from 'react-icons/fa'
 import SectionTitle from './SectionTitle'
 import Reveal from './Reveal'
+import Terminal from './Terminal'
 import { PROFILE, SOCIALS, EMAILJS, RESUME } from '../data'
 
 const LINKS = [
@@ -17,6 +18,7 @@ const LINKS = [
 export default function Contact() {
   const formRef = useRef(null)
   const [status, setStatus] = useState(null) // null | sending | sent | error
+  const [tab, setTab] = useState('send_message') // send_message | terminal
 
   const submit = async (e) => {
     e.preventDefault()
@@ -99,9 +101,28 @@ export default function Contact() {
               <span className="h-2.5 w-2.5 rounded-full bg-danger/70" />
               <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/70" />
               <span className="h-2.5 w-2.5 rounded-full bg-term/70" />
-              <span className="ml-2 font-mono text-xs text-muted">operator@shrivarshan: ~/send_message</span>
+              <span className="ml-2 hidden font-mono text-xs text-muted sm:inline">operator@shrivarshan:</span>
+              <div className="ml-auto flex gap-1 sm:ml-2">
+                {['send_message', 'terminal'].map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTab(t)}
+                    className={`rounded px-2.5 py-1 font-mono text-xs transition-colors ${
+                      tab === t
+                        ? 'bg-term/15 text-term'
+                        : 'text-muted hover:text-slate-200'
+                    }`}
+                  >
+                    ~/{t}
+                  </button>
+                ))}
+              </div>
             </div>
 
+            {tab === 'terminal' ? (
+              <Terminal />
+            ) : (
             <form ref={formRef} onSubmit={submit} className="space-y-4 p-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <input name="from_name" required placeholder="// your name" className={input} />
@@ -135,6 +156,7 @@ export default function Contact() {
                 )}
               </button>
             </form>
+            )}
           </div>
         </Reveal>
       </div>

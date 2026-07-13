@@ -25,7 +25,7 @@ const PAIRS = [
   [7, 2], [6, 1], [5, 4], [9, 7], [3, 4],
 ]
 
-function GlobeMesh({ apiRef }) {
+function GlobeMesh({ apiRef, onStrike }) {
   const userRef = useRef([]) // live user-triggered strikes
   const timeouts = useRef([])
 
@@ -146,6 +146,7 @@ function GlobeMesh({ apiRef }) {
     const lat = 90 - (Math.acos(local.y / r) * 180) / Math.PI
     const lng = ((90 - (Math.atan2(local.z, local.x) * 180) / Math.PI + 540) % 360) - 180
     strikeAt(lat, lng, 2)
+    onStrike?.()
   }
 
   return <primitive object={globe} onClick={onClick} />
@@ -241,7 +242,7 @@ function Ufo({ apiRef }) {
  * @param {boolean} active  When false (hero scrolled off-screen) the render loop
  *   is frozen so the globe stops consuming GPU — the main lag fix on slow devices.
  */
-export default function ThreatGlobe({ active = true }) {
+export default function ThreatGlobe({ active = true, onStrike }) {
   // Start modest; PerformanceMonitor scales down further if frames drop.
   const [dpr, setDpr] = useState(1.4)
   const apiRef = useRef(null) // GlobeMesh strike API, shared with the UFO
@@ -263,7 +264,7 @@ export default function ThreatGlobe({ active = true }) {
       <directionalLight position={[1, 1, 1]} intensity={1.1} color="#ffffff" />
       {/* faint starfield drifting behind the earth */}
       <Stars radius={300} depth={60} count={1400} factor={3.2} saturation={0} fade speed={0.5} />
-      <GlobeMesh apiRef={apiRef} />
+      <GlobeMesh apiRef={apiRef} onStrike={onStrike} />
       <Ufo apiRef={apiRef} />
       {/* Drag to spin (left or right button); idle auto-rotate; no zoom/pan so the page still scrolls. */}
       <OrbitControls

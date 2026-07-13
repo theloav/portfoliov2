@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { motion, useInView, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -7,6 +7,7 @@ import { FaMediumM } from 'react-icons/fa'
 import ScrambleText from './ScrambleText'
 import ErrorBoundary from './ErrorBoundary'
 import Magnetic from './Magnetic'
+import ThreatFeed from './ThreatFeed'
 import { useCanRenderWebGL, useReducedMotion } from '../lib/hooks'
 import { PROFILE, SOCIALS, RESUME } from '../data'
 
@@ -30,6 +31,7 @@ function GlobeFallback() {
 export default function Hero() {
   const webgl = useCanRenderWebGL()
   const reduced = useReducedMotion()
+  const [strikes, setStrikes] = useState(0)
 
   const sectionRef = useRef(null)
   const globeRef = useRef(null)
@@ -88,9 +90,16 @@ export default function Hero() {
             <ErrorBoundary name="threat-globe" fallback={<GlobeFallback />}>
               {webgl ? (
                 <Suspense fallback={<GlobeFallback />}>
-                  <ThreatGlobe active={inView} />
-                  <span className="pointer-events-none absolute bottom-2 right-2 hidden font-mono text-[10px] tracking-widest text-muted/60 lg:block">
+                  <ThreatGlobe active={inView} onStrike={() => setStrikes((s) => s + 1)} />
+                  <span className="pointer-events-none absolute bottom-2 right-2 hidden text-right font-mono text-[10px] tracking-widest text-muted/60 lg:block">
                     drag to rotate ↻ · click to strike ✛
+                    <span
+                      className={`mt-1 block transition-colors ${
+                        strikes > 0 ? 'text-danger' : 'text-muted/40'
+                      }`}
+                    >
+                      STRIKES LANDED: {String(strikes).padStart(2, '0')}
+                    </span>
                   </span>
                 </Suspense>
               ) : (
@@ -161,6 +170,11 @@ export default function Hero() {
             </div>
           </div>
         </motion.div>
+      </div>
+
+      {/* live SOC feed — bottom-left, desktop only */}
+      <div className="absolute bottom-8 left-12 z-10 hidden max-w-md overflow-hidden lg:block">
+        <ThreatFeed active={inView} />
       </div>
 
       {/* scroll cue */}
