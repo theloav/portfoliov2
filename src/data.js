@@ -129,6 +129,14 @@ export const PROJECTS = [
     featured: true,
     desc: 'Agentic-first, open-source LLM purple-team platform. Drives multi-hop indirect prompt-injection → tool-misuse → exfiltration chains, scores action-harm, then auto-synthesizes guardrails, hardening patches & regression tests.',
     stack: ['Python', 'LLM Red Team', 'OWASP LLM Top 10', 'Agentic'],
+    caseStudy: {
+      problem:
+        'LLM apps with tool access can be hijacked through indirect prompt injection — poisoned content in a retrieved doc or API response quietly redirects the agent into misusing its own tools and exfiltrating data. Most testing stops at single-turn jailbreak prompts and never exercises these multi-hop agentic chains.',
+      build:
+        'An agentic-first purple-team platform that autonomously drives multi-hop attack chains (indirect injection → tool-misuse → exfiltration), scores the real-world harm of each action rather than just the text output, and then closes the loop by auto-synthesizing guardrails, hardening patches, and regression tests from what it found.',
+      impact:
+        'Turns LLM security from a one-off manual jailbreak exercise into a repeatable, self-hardening pipeline — every discovered chain becomes a permanent regression test. Mapped to the OWASP LLM Top 10.',
+    },
   },
   {
     title: 'Sandworm',
@@ -137,6 +145,14 @@ export const PROJECTS = [
     featured: true,
     desc: 'AI-powered malware reverse-engineering platform. Reconstructs a sample lifecycle from static, dynamic & memory evidence and emits defender-ready YARA + Sigma. Handles PE/ELF/webshells/macros — fully offline, 129 tests green.',
     stack: ['Python', 'Reverse Engineering', 'YARA', 'Sigma'],
+    caseStudy: {
+      problem:
+        'Reverse-engineering a malware sample into deployable detections is slow, expert-heavy manual work — and sending samples to cloud services is a non-starter for sensitive investigations.',
+      build:
+        'A fully offline, AI-powered RE platform that fuses static, dynamic, and memory evidence to reconstruct a sample’s lifecycle, then emits defender-ready YARA and Sigma rules. Handles PE, ELF, webshells, and Office macros, backed by 129 passing tests.',
+      impact:
+        'Compresses hours of analyst effort into an automated pipeline that outputs detections you can ship straight to a SIEM/EDR — with zero data leaving the network.',
+    },
   },
   {
     title: 'Purple Team Framework',
@@ -144,6 +160,14 @@ export const PROJECTS = [
     href: 'https://github.com/theloav/purple-team-framework',
     desc: 'Full offensive→defensive loop: Caldera runs adversary sims (APT29/FIN7/Lazarus/Ransomware, 30+ techniques) → Elastic fires detections → ATT&CK coverage measured automatically, gaps flagged & exported to Navigator.',
     stack: ['Caldera', 'Elastic', 'MITRE ATT&CK'],
+    caseStudy: {
+      problem:
+        'Blue teams rarely know which attacker techniques they can actually detect. Coverage is assumed, not measured, so real gaps only surface during an incident.',
+      build:
+        'A closed offensive→defensive loop: Caldera runs adversary emulations (APT29, FIN7, Lazarus, ransomware — 30+ ATT&CK techniques), Elastic fires the corresponding detections, and coverage is scored automatically with gaps flagged and exported to the ATT&CK Navigator.',
+      impact:
+        'Replaces guesswork with a measurable, repeatable coverage map — you can point at exactly which techniques are detected and which need new detection content.',
+    },
   },
   {
     title: 'Threat-Intel Pipeline',

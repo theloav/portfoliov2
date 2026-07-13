@@ -227,15 +227,46 @@ export default function CyberBackground() {
               tgt = n
             }
           }
-          if (tgt && td < 300) u.zap = { node: tgt, t: 30 }
+          if (tgt && td < 300) u.zap = { node: tgt, t: 55 }
         }
 
-        // attack beam
+        // abduction / attack beam
         if (u.zap) {
           u.zap.t--
-          const tx = u.zap.node ? u.zap.node.x : u.zap.x
-          const ty = u.zap.node ? u.zap.node.y : u.zap.y
+          const node = u.zap.node
+          const tx = node ? node.x : u.zap.x
+          const ty = node ? node.y : u.zap.y
           const flick = 0.35 + Math.random() * 0.4
+
+          // tractor cone (wide translucent triangle from saucer down to target)
+          if (node) {
+            const cone = ctx.createLinearGradient(u.x, uy + 4, tx, ty)
+            cone.addColorStop(0, 'rgba(0,255,156,0.18)')
+            cone.addColorStop(1, 'rgba(0,255,156,0)')
+            ctx.fillStyle = cone
+            ctx.beginPath()
+            ctx.moveTo(u.x - 3, uy + 4)
+            ctx.lineTo(u.x + 3, uy + 4)
+            ctx.lineTo(tx + 11, ty)
+            ctx.lineTo(tx - 11, ty)
+            ctx.closePath()
+            ctx.fill()
+            // the node gets pulled UP toward the saucer, then vanishes + respawns
+            node.hot = true
+            node.x += (u.x - node.x) * 0.06
+            node.y += (uy + 6 - node.y) * 0.06
+            node.vx *= 0.6
+            node.vy *= 0.6
+            if (u.zap.t <= 0) {
+              node.x = Math.random() * w
+              node.y = Math.random() * h
+              node.vx = (Math.random() - 0.5) * 0.24
+              node.vy = (Math.random() - 0.5) * 0.24
+              node.hot = Math.random() < 0.16
+            }
+          }
+
+          // electric beam core
           const grad = ctx.createLinearGradient(u.x, uy + 4, tx, ty)
           grad.addColorStop(0, `rgba(0,255,156,${flick})`)
           grad.addColorStop(1, `rgba(255,77,94,${flick})`)
@@ -243,16 +274,13 @@ export default function CyberBackground() {
           ctx.lineWidth = 1.4
           ctx.beginPath()
           ctx.moveTo(u.x, uy + 4)
-          // slight jitter halfway makes it feel electric
           ctx.lineTo((u.x + tx) / 2 + (Math.random() - 0.5) * 7, (uy + ty) / 2 + (Math.random() - 0.5) * 7)
           ctx.lineTo(tx, ty)
           ctx.stroke()
-          // impact flare
           ctx.fillStyle = `rgba(255,77,94,${flick})`
           ctx.beginPath()
           ctx.arc(tx, ty, 2.6 + Math.random() * 1.6, 0, Math.PI * 2)
           ctx.fill()
-          if (u.zap.node) u.zap.node.hot = true // node is now compromised
           if (u.zap.t <= 0) u.zap = null
         }
 

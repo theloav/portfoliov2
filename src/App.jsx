@@ -16,6 +16,7 @@ import Contact from './components/Contact'
 import Footer from './components/Footer'
 import Marquee from './components/Marquee'
 import CyberBackground from './components/CyberBackground'
+import HackMode from './components/HackMode'
 
 // Each section isolated: a throw in one can never blank the others.
 function Guarded({ name, children }) {
@@ -65,6 +66,9 @@ export default function App() {
       </ErrorBoundary>
       <ErrorBoundary name="cyber-bg">
         <CyberBackground />
+      </ErrorBoundary>
+      <ErrorBoundary name="hack-mode">
+        <HackMode />
       </ErrorBoundary>
       <ErrorBoundary name="hud">
         <Hud />

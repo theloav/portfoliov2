@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { sfx } from '../lib/sound'
 
 /**
  * Viewfinder cursor: corner-bracket frame + center crosshair move as one rigid
@@ -31,7 +32,9 @@ export default function CustomCursor() {
       dot.style.transform = t
       ring.style.transform = t
       const interactive = e.target?.closest?.('a, button, [data-cursor], input, textarea')
+      const wasActive = ring.classList.contains('cursor-ring--active')
       ring.classList.toggle('cursor-ring--active', !!interactive)
+      if (interactive && !wasActive) sfx.lock() // chirp on target lock-on
     }
 
     document.body.classList.add('has-cursor')

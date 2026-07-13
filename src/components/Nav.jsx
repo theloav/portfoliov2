@@ -1,7 +1,26 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { FiGithub, FiFileText, FiMenu, FiX } from 'react-icons/fi'
+import { FiGithub, FiFileText, FiMenu, FiX, FiVolume2, FiVolumeX } from 'react-icons/fi'
 import { NAV, SOCIALS, RESUME } from '../data'
+import { isSoundOn, toggleSound, onSoundChange } from '../lib/sound'
+
+function SoundToggle() {
+  const [on, setOn] = useState(isSoundOn())
+  useEffect(() => onSoundChange(setOn), [])
+  return (
+    <button
+      type="button"
+      onClick={() => setOn(toggleSound())}
+      aria-label={on ? 'Mute sound' : 'Enable sound'}
+      title={on ? 'Sound: on' : 'Sound: off'}
+      className={`grid h-9 w-9 place-items-center rounded-md border transition-colors ${
+        on ? 'border-term/50 text-term' : 'border-white/10 text-muted hover:text-slate-200'
+      }`}
+    >
+      {on ? <FiVolume2 className="text-sm" /> : <FiVolumeX className="text-sm" />}
+    </button>
+  )
+}
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false)
@@ -70,6 +89,7 @@ export default function Nav() {
 
         {/* desktop actions */}
         <div className="hidden items-center gap-2 md:flex">
+          <SoundToggle />
           <a href={RESUME.href} download={RESUME.filename} className="btn-ghost !px-3 !py-1.5 !text-xs">
             <FiFileText /> Resume
           </a>
@@ -84,15 +104,18 @@ export default function Nav() {
         </div>
 
         {/* mobile toggle */}
-        <button
-          type="button"
-          aria-label={open ? 'Close menu' : 'Open menu'}
-          aria-expanded={open}
-          onClick={() => setOpen((o) => !o)}
-          className="grid h-10 w-10 place-items-center rounded-md border border-white/10 text-slate-200 md:hidden"
-        >
-          {open ? <FiX className="text-lg" /> : <FiMenu className="text-lg" />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <SoundToggle />
+          <button
+            type="button"
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-expanded={open}
+            onClick={() => setOpen((o) => !o)}
+            className="grid h-10 w-10 place-items-center rounded-md border border-white/10 text-slate-200"
+          >
+            {open ? <FiX className="text-lg" /> : <FiMenu className="text-lg" />}
+          </button>
+        </div>
       </nav>
 
       {/* mobile menu */}

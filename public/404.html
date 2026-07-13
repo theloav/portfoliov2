@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>404 — Access Denied</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      background: #05060a;
+      color: #7d8899;
+      font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Menlo, monospace;
+      display: grid;
+      place-items: center;
+      background-image:
+        radial-gradient(circle at 50% -10%, rgba(56,194,255,0.06), transparent 55%),
+        radial-gradient(circle at 90% 100%, rgba(0,255,156,0.05), transparent 45%);
+    }
+    .frame { position: fixed; width: 20px; height: 20px; border: 0 solid rgba(0,255,156,0.4); }
+    .tl { top: 20px; left: 20px; border-top-width: 1px; border-left-width: 1px; }
+    .tr { top: 20px; right: 20px; border-top-width: 1px; border-right-width: 1px; }
+    .bl { bottom: 20px; left: 20px; border-bottom-width: 1px; border-left-width: 1px; }
+    .br { bottom: 20px; right: 20px; border-bottom-width: 1px; border-right-width: 1px; }
+    main { text-align: center; padding: 24px; }
+    .code {
+      font-size: clamp(72px, 18vw, 160px);
+      font-weight: 700;
+      color: #ff4d5e;
+      text-shadow: 0 0 24px rgba(255,77,94,0.4);
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+    .denied {
+      margin-top: 10px;
+      font-size: 13px;
+      letter-spacing: 0.35em;
+      color: #ff4d5e;
+    }
+    .msg { margin-top: 26px; font-size: 14px; line-height: 1.7; }
+    .msg .ok { color: #00ff9c; }
+    .cursor { display: inline-block; width: 8px; height: 15px; background: #00ff9c; vertical-align: -2px; animation: blink 1s steps(1) infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    a.back {
+      display: inline-block;
+      margin-top: 34px;
+      padding: 12px 22px;
+      border: 1px solid rgba(0,255,156,0.5);
+      border-radius: 6px;
+      color: #00ff9c;
+      text-decoration: none;
+      font-size: 14px;
+      background: rgba(0,255,156,0.05);
+      transition: background 0.2s ease, box-shadow 0.2s ease;
+    }
+    a.back:hover { background: rgba(0,255,156,0.15); box-shadow: 0 0 20px rgba(0,255,156,0.35); }
+  </style>
+</head>
+<body>
+  <span class="frame tl"></span><span class="frame tr"></span>
+  <span class="frame bl"></span><span class="frame br"></span>
+  <main>
+    <div class="code">404</div>
+    <div class="denied">// ACCESS DENIED — SECTOR NOT FOUND</div>
+    <p class="msg">
+      $ trace --path requested_resource<br />
+      &gt; the path you probed returned no intel.<br />
+      &gt; intrusion logged. counter-measures: <span class="ok">not required</span> <span class="cursor"></span>
+    </p>
+    <a class="back" href="/">← return to base</a>
+  </main>
+</body>
+</html>

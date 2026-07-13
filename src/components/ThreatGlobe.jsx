@@ -1,22 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, PerformanceMonitor, Stars } from '@react-three/drei'
+import { Html, OrbitControls, PerformanceMonitor, Stars } from '@react-three/drei'
 import * as THREE from 'three'
 import ThreeGlobe from 'three-globe'
 import countries from '../assets/countries.json'
+import { sfx } from '../lib/sound'
 
-// City nodes { lat, lng, color }. Chennai (home) is the orange marker.
+// City nodes { lat, lng, color, name }. Chennai (home) is the orange marker.
 const NODES = [
-  { lat: 13.08, lng: 80.27, color: '#ff6b3d' }, // Chennai (home)
-  { lat: 51.5, lng: -0.12, color: '#38c2ff' }, // London
-  { lat: 40.71, lng: -74.0, color: '#38c2ff' }, // New York
-  { lat: 35.68, lng: 139.69, color: '#38c2ff' }, // Tokyo
-  { lat: 1.35, lng: 103.82, color: '#38c2ff' }, // Singapore
-  { lat: -33.86, lng: 151.2, color: '#38c2ff' }, // Sydney
-  { lat: 52.52, lng: 13.4, color: '#38c2ff' }, // Berlin
-  { lat: 37.77, lng: -122.4, color: '#38c2ff' }, // San Francisco
-  { lat: 55.75, lng: 37.61, color: '#38c2ff' }, // Moscow
-  { lat: -23.55, lng: -46.63, color: '#38c2ff' }, // São Paulo
+  { lat: 13.08, lng: 80.27, color: '#ff6b3d', name: 'CHENNAI · HOME' }, // Chennai (home)
+  { lat: 51.5, lng: -0.12, color: '#38c2ff', name: 'LONDON' },
+  { lat: 40.71, lng: -74.0, color: '#38c2ff', name: 'NEW YORK' },
+  { lat: 35.68, lng: 139.69, color: '#38c2ff', name: 'TOKYO' },
+  { lat: 1.35, lng: 103.82, color: '#38c2ff', name: 'SINGAPORE' },
+  { lat: -33.86, lng: 151.2, color: '#38c2ff', name: 'SYDNEY' },
+  { lat: 52.52, lng: 13.4, color: '#38c2ff', name: 'BERLIN' },
+  { lat: 37.77, lng: -122.4, color: '#38c2ff', name: 'SAN FRANCISCO' },
+  { lat: 55.75, lng: 37.61, color: '#38c2ff', name: 'MOSCOW' },
+  { lat: -23.55, lng: -46.63, color: '#38c2ff', name: 'SÃO PAULO' },
 ]
 
 // Attack arcs (indices into NODES). Chennai is the common origin.
@@ -28,6 +29,7 @@ const PAIRS = [
 function GlobeMesh({ apiRef, onStrike }) {
   const userRef = useRef([]) // live user-triggered strikes
   const timeouts = useRef([])
+  const [hover, setHover] = useState(null) // hovered city index
 
   const { globe, baseArcs, baseRings } = useMemo(() => {
     const arcs = PAIRS.map(([a, b]) => ({
@@ -120,6 +122,7 @@ function GlobeMesh({ apiRef, onStrike }) {
     }
     userRef.current.push(entry)
     refresh()
+    sfx.strike()
     timeouts.current.push(
       setTimeout(() => {
         userRef.current = userRef.current.filter((x) => x !== entry)
@@ -149,7 +152,54 @@ function GlobeMesh({ apiRef, onStrike }) {
     onStrike?.()
   }
 
-  return <primitive object={globe} onClick={onClick} />
+  // Precompute each city's local 3D position for the invisible hover hotspots.
+  const hotspots = useMemo(
+    () =>
+      NODES.map((n) => {
+        const c = globe.getCoords(n.lat, n.lng, 0.02)
+        return { ...n, pos: [c.x, c.y, c.z] }
+      }),
+    [globe]
+  )
+
+  return (
+    <primitive object={globe} onClick={onClick}>
+      {hotspots.map((n, i) => (
+        <mesh
+          key={i}
+          position={n.pos}
+          onPointerOver={(e) => {
+            e.stopPropagation()
+            setHover(i)
+          }}
+          onPointerOut={() => setHover((h) => (h === i ? null : h))}
+        >
+          <sphereGeometry args={[3.4, 8, 8]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+          {hover === i && (
+            <Html center distanceFactor={180} zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
+              <div
+                style={{
+                  transform: 'translateY(-26px)',
+                  whiteSpace: 'nowrap',
+                  fontFamily: 'JetBrains Mono, monospace',
+                  fontSize: 12,
+                  padding: '3px 8px',
+                  borderRadius: 5,
+                  border: `1px solid ${n.color}66`,
+                  background: 'rgba(5,6,10,0.85)',
+                  color: n.color,
+                  boxShadow: `0 0 12px ${n.color}44`,
+                }}
+              >
+                {n.name} <span style={{ color: '#7d8899' }}>· node online</span>
+              </div>
+            </Html>
+          )}
+        </mesh>
+      ))}
+    </primitive>
+  )
 }
 
 /**
