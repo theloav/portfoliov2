@@ -1,6 +1,6 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
+import { OrbitControls, PerformanceMonitor } from '@react-three/drei'
 import * as THREE from 'three'
 import ThreeGlobe from 'three-globe'
 import countries from '../assets/countries.json'
@@ -80,13 +80,27 @@ function GlobeMesh() {
   return <primitive ref={ref} object={globe} />
 }
 
-export default function ThreatGlobe() {
+/**
+ * @param {boolean} active  When false (hero scrolled off-screen) the render loop
+ *   is frozen so the globe stops consuming GPU — the main lag fix on slow devices.
+ */
+export default function ThreatGlobe({ active = true }) {
+  // Start modest; PerformanceMonitor scales down further if frames drop.
+  const [dpr, setDpr] = useState(1.4)
+
   return (
     <Canvas
+      frameloop={active ? 'always' : 'never'}
       camera={{ position: [0, 0, 340], fov: 44, near: 0.1, far: 2000 }}
-      dpr={[1, 1.8]}
+      dpr={dpr}
+      performance={{ min: 0.5 }}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
     >
+      <PerformanceMonitor
+        onDecline={() => setDpr(1)}
+        onIncline={() => setDpr(1.4)}
+        onFallback={() => setDpr(1)}
+      />
       <ambientLight intensity={2.2} color="#c9ddff" />
       <directionalLight position={[1, 1, 1]} intensity={1.1} color="#ffffff" />
       <GlobeMesh />

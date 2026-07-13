@@ -1,10 +1,15 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect, useRef } from 'react'
+import { useInView } from 'framer-motion'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { FiArrowDownRight, FiGithub, FiLinkedin } from 'react-icons/fi'
 import { FaMediumM } from 'react-icons/fa'
 import ScrambleText from './ScrambleText'
 import ErrorBoundary from './ErrorBoundary'
-import { useCanRenderWebGL } from '../lib/hooks'
+import { useCanRenderWebGL, useReducedMotion } from '../lib/hooks'
 import { PROFILE, SOCIALS } from '../data'
+
+gsap.registerPlugin(ScrollTrigger)
 
 const ThreatGlobe = lazy(() => import('./ThreatGlobe'))
 
@@ -23,17 +28,48 @@ function GlobeFallback() {
 
 export default function Hero() {
   const webgl = useCanRenderWebGL()
+  const reduced = useReducedMotion()
+
+  const sectionRef = useRef(null)
+  const globeRef = useRef(null)
+  const contentRef = useRef(null)
+
+  // Freeze the globe render loop once the hero leaves the viewport (main lag fix).
+  const inView = useInView(sectionRef, { margin: '120px 0px 120px 0px' })
+
+  // Cheap, GPU-composited parallax as you scroll through the hero.
+  useEffect(() => {
+    if (reduced) return
+    const ctx = gsap.context(() => {
+      const st = {
+        trigger: sectionRef.current,
+        start: 'top top',
+        end: 'bottom top',
+        scrub: true,
+      }
+      gsap.to(globeRef.current, { yPercent: 14, ease: 'none', scrollTrigger: st })
+      gsap.to(contentRef.current, { yPercent: -10, opacity: 0.2, ease: 'none', scrollTrigger: st })
+    }, sectionRef)
+    return () => ctx.revert()
+  }, [reduced])
 
   return (
-    <section id="top" className="relative flex min-h-[100svh] items-center overflow-hidden">
+    <section
+      ref={sectionRef}
+      id="top"
+      className="relative flex min-h-[100svh] items-center overflow-hidden"
+    >
       {/* 3D centerpiece — right/behind on desktop. Outer layer stays click-through
           so hero buttons work; the globe box itself is interactive (drag to spin). */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center md:justify-end md:pr-[2%]">
-        <div className="pointer-events-auto relative h-[82vh] max-h-[760px] w-full max-w-[720px] opacity-95">
+        <div
+          ref={globeRef}
+          className="pointer-events-auto relative h-[82vh] max-h-[760px] w-full max-w-[720px] opacity-95 [will-change:transform]"
+        >
           <ErrorBoundary name="threat-globe" fallback={<GlobeFallback />}>
             {webgl ? (
               <Suspense fallback={<GlobeFallback />}>
-                <ThreatGlobe />
+                <ThreatGlobe active={inView} />
                 <span className="pointer-events-none absolute bottom-2 right-2 hidden font-mono text-[10px] tracking-widest text-muted/60 lg:block">
                   drag to rotate ↻
                 </span>
@@ -48,7 +84,7 @@ export default function Hero() {
       {/* fade so the copy stays readable over the globe */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-base-900 via-base-900/70 to-transparent" />
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-5">
+      <div ref={contentRef} className="relative z-10 mx-auto w-full max-w-6xl px-5 [will-change:transform]">
         <p className="eyebrow mb-5 flex items-center gap-3">
           <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-term shadow-glow-term" />
           SYSTEM ONLINE // STATUS: OPERATIONAL
