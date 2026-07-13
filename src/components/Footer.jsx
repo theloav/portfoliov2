@@ -30,7 +30,7 @@ export default function Footer() {
           ))}
         </div>
 
-        <p className="font-mono text-[11px] text-muted/70">secured by design</p>
+        <p className="font-mono text-[11px] tracking-widest text-muted/60">[ SESSION SECURE ]</p>
       </div>
     </footer>
   )

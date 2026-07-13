@@ -24,16 +24,10 @@ export default function About() {
             <div className="pointer-events-none absolute inset-0 mix-blend-overlay [background:linear-gradient(120deg,rgba(0,255,156,0.12),transparent_40%,rgba(56,194,255,0.12))]" />
             <div className="pointer-events-none absolute inset-0 opacity-30 [background:repeating-linear-gradient(0deg,transparent,transparent_3px,rgba(0,255,156,0.05)_3px,rgba(0,255,156,0.05)_4px)]" />
 
-            {/* overlays */}
+            {/* overlay */}
             <span className="absolute left-3 top-3 rounded border border-term/40 bg-base-900/60 px-2 py-0.5 font-mono text-[10px] tracking-widest text-term backdrop-blur-sm">
               OPERATOR
             </span>
-            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between font-mono text-[10px] text-muted">
-              <span className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-term" /> LIVE
-              </span>
-              <span className="text-cyan/80">// sakana.ai · field kit</span>
-            </div>
           </div>
         </Reveal>
 
@@ -55,9 +49,9 @@ export default function About() {
                 { Icon: FiPhone, text: PROFILE.phone },
                 { Icon: HiOutlineAcademicCap, text: PROFILE.education },
               ].map(({ Icon, text }) => (
-                <div key={text} className="flex items-center gap-3 text-sm text-slate-300">
-                  <Icon className="shrink-0 text-term" />
-                  <span className="truncate">{text}</span>
+                <div key={text} className="flex items-start gap-3 text-sm text-slate-300">
+                  <Icon className="mt-0.5 shrink-0 text-term" />
+                  <span className="break-words leading-snug">{text}</span>
                 </div>
               ))}
             </div>

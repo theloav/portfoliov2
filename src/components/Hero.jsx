@@ -26,13 +26,17 @@ export default function Hero() {
 
   return (
     <section id="top" className="relative flex min-h-[100svh] items-center overflow-hidden">
-      {/* 3D centerpiece — right/behind on desktop */}
+      {/* 3D centerpiece — right/behind on desktop. Outer layer stays click-through
+          so hero buttons work; the globe box itself is interactive (drag to spin). */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center md:justify-end md:pr-[2%]">
-        <div className="h-[82vh] max-h-[760px] w-full max-w-[720px] opacity-95">
+        <div className="pointer-events-auto relative h-[82vh] max-h-[760px] w-full max-w-[720px] opacity-95">
           <ErrorBoundary name="threat-globe" fallback={<GlobeFallback />}>
             {webgl ? (
               <Suspense fallback={<GlobeFallback />}>
                 <ThreatGlobe />
+                <span className="pointer-events-none absolute bottom-2 right-2 hidden font-mono text-[10px] tracking-widest text-muted/60 lg:block">
+                  drag to rotate ↻
+                </span>
               </Suspense>
             ) : (
               <GlobeFallback />

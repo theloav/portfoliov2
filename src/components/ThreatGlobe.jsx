@@ -1,130 +1,111 @@
-import { Suspense, useMemo, useRef } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { Line } from '@react-three/drei'
+import { useMemo, useRef } from 'react'
+import { Canvas } from '@react-three/fiber'
+import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
+import ThreeGlobe from 'three-globe'
+import countries from '../assets/countries.json'
 
-const R = 1.6
-
-// Convert lat/long (degrees) to a point on a sphere of radius `r`.
-function toVec3(lat, lon, r = R) {
-  const phi = (90 - lat) * (Math.PI / 180)
-  const theta = (lon + 180) * (Math.PI / 180)
-  return new THREE.Vector3(
-    -r * Math.sin(phi) * Math.cos(theta),
-    r * Math.cos(phi),
-    r * Math.sin(phi) * Math.sin(theta)
-  )
-}
-
-// A handful of real-ish nodes so arcs look like a live attack map.
+// City nodes { lat, lng, color }. Chennai (home) is the orange marker.
 const NODES = [
-  [13.08, 80.27], // Chennai
-  [51.5, -0.12], // London
-  [40.71, -74.0], // New York
-  [35.68, 139.69], // Tokyo
-  [1.35, 103.82], // Singapore
-  [-33.86, 151.2], // Sydney
-  [52.52, 13.4], // Berlin
-  [37.77, -122.4], // San Francisco
-  [55.75, 37.61], // Moscow
-  [-23.55, -46.63], // São Paulo
+  { lat: 13.08, lng: 80.27, color: '#ff6b3d' }, // Chennai (home)
+  { lat: 51.5, lng: -0.12, color: '#38c2ff' }, // London
+  { lat: 40.71, lng: -74.0, color: '#38c2ff' }, // New York
+  { lat: 35.68, lng: 139.69, color: '#38c2ff' }, // Tokyo
+  { lat: 1.35, lng: 103.82, color: '#38c2ff' }, // Singapore
+  { lat: -33.86, lng: 151.2, color: '#38c2ff' }, // Sydney
+  { lat: 52.52, lng: 13.4, color: '#38c2ff' }, // Berlin
+  { lat: 37.77, lng: -122.4, color: '#38c2ff' }, // San Francisco
+  { lat: 55.75, lng: 37.61, color: '#38c2ff' }, // Moscow
+  { lat: -23.55, lng: -46.63, color: '#38c2ff' }, // São Paulo
 ]
 
-// Pairs (indices into NODES) that get animated attack arcs.
-const ARCS = [
-  [0, 1], [0, 4], [2, 1], [3, 4], [5, 4],
-  [7, 2], [6, 1], [8, 6], [9, 7], [0, 3],
+// Attack arcs (indices into NODES). Chennai is the common origin.
+const PAIRS = [
+  [0, 1], [0, 4], [0, 3], [0, 8], [2, 1],
+  [7, 2], [6, 1], [5, 4], [9, 7], [3, 4],
 ]
 
-function Arc({ from, to, color, offset }) {
-  const pulseRef = useRef()
-  const { points, curve } = useMemo(() => {
-    const a = toVec3(from[0], from[1])
-    const b = toVec3(to[0], to[1])
-    const mid = a.clone().add(b).multiplyScalar(0.5)
-    // Cap the arc height so long arcs never shoot outside the camera frustum.
-    const lift = Math.min(1.2, 1 + a.distanceTo(b) * 0.12)
-    mid.normalize().multiplyScalar(R * lift)
-    const c = new THREE.QuadraticBezierCurve3(a, mid, b)
-    return { points: c.getPoints(48), curve: c }
-  }, [from, to])
+function GlobeMesh() {
+  const ref = useRef()
 
-  useFrame((state) => {
-    if (!pulseRef.current) return
-    const t = (state.clock.elapsedTime * 0.18 + offset) % 1
-    const p = curve.getPoint(t)
-    pulseRef.current.position.set(p.x, p.y, p.z)
-    const s = 0.035 + Math.sin(t * Math.PI) * 0.03
-    pulseRef.current.scale.setScalar(s)
-  })
+  const globe = useMemo(() => {
+    const arcs = PAIRS.map(([a, b]) => ({
+      startLat: NODES[a].lat,
+      startLng: NODES[a].lng,
+      endLat: NODES[b].lat,
+      endLng: NODES[b].lng,
+    }))
 
-  return (
-    <group>
-      <Line points={points} color={color} lineWidth={1} transparent opacity={0.35} />
-      <mesh ref={pulseRef}>
-        <sphereGeometry args={[1, 12, 12]} />
-        <meshBasicMaterial color={color} toneMapped={false} />
-      </mesh>
-    </group>
-  )
-}
+    const g = new ThreeGlobe({ animateIn: false })
+      .showGlobe(true)
+      .showAtmosphere(true)
+      .atmosphereColor('#2f9bff')
+      .atmosphereAltitude(0.16)
+      .showGraticules(true)
+      // countries
+      .polygonsData(countries.features)
+      .polygonAltitude(0.008)
+      .polygonCapColor(() => 'rgba(74, 108, 143, 0.5)')
+      .polygonSideColor(() => 'rgba(20, 34, 52, 0.25)')
+      .polygonStrokeColor(() => 'rgba(120, 158, 196, 0.45)')
+      // city markers
+      .pointsData(NODES)
+      .pointColor('color')
+      .pointAltitude(0.012)
+      .pointRadius(0.32)
+      .pointResolution(18)
+      // attack arcs — animated dash "travels" along the line
+      .arcsData(arcs)
+      .arcColor(() => ['rgba(0,255,156,0)', '#00ff9c', 'rgba(56,194,255,0.1)'])
+      .arcStroke(0.45)
+      .arcDashLength(0.45)
+      .arcDashGap(1.6)
+      .arcDashInitialGap(() => Math.random() * 5)
+      .arcDashAnimateTime(2200)
+      .arcAltitudeAutoScale(0.45)
 
-function Globe() {
-  const group = useRef()
-  useFrame((_, delta) => {
-    if (group.current) group.current.rotation.y += delta * 0.06
-  })
+    // Dark ocean material.
+    const mat = g.globeMaterial()
+    mat.color = new THREE.Color('#0c1a2b')
+    mat.emissive = new THREE.Color('#060d16')
+    mat.emissiveIntensity = 0.9
+    mat.shininess = 0.3
 
-  const nodePoints = useMemo(() => NODES.map((n) => toVec3(n[0], n[1])), [])
+    // Face Asia/India toward the camera.
+    g.rotation.y = -Math.PI * 0.52
+    g.rotation.x = 0.32
+    return g
+  }, [])
 
-  return (
-    <group ref={group} rotation={[0.35, 0, 0.1]}>
-      {/* solid dark occluder so back-facing arcs/nodes are hidden → real depth */}
-      <mesh>
-        <sphereGeometry args={[R * 0.985, 48, 48]} />
-        <meshBasicMaterial color="#060a10" />
-      </mesh>
-
-      {/* wireframe shell */}
-      <mesh>
-        <sphereGeometry args={[R, 34, 34]} />
-        <meshBasicMaterial color="#124b46" wireframe transparent opacity={0.5} />
-      </mesh>
-
-      {/* glowing city nodes */}
-      {nodePoints.map((p, i) => (
-        <mesh key={i} position={[p.x, p.y, p.z]}>
-          <sphereGeometry args={[0.028, 10, 10]} />
-          <meshBasicMaterial color="#00ff9c" toneMapped={false} />
-        </mesh>
-      ))}
-
-      {/* attack arcs */}
-      {ARCS.map((pair, i) => (
-        <Arc
-          key={i}
-          from={NODES[pair[0]]}
-          to={NODES[pair[1]]}
-          color={i % 3 === 0 ? '#38c2ff' : '#00ff9c'}
-          offset={i / ARCS.length}
-        />
-      ))}
-    </group>
-  )
+  return <primitive ref={ref} object={globe} />
 }
 
 export default function ThreatGlobe() {
   return (
     <Canvas
-      camera={{ position: [0, 0, 6.5], fov: 42 }}
+      camera={{ position: [0, 0, 340], fov: 44, near: 0.1, far: 2000 }}
       dpr={[1, 1.8]}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-      style={{ pointerEvents: 'none' }}
     >
-      <Suspense fallback={null}>
-        <ambientLight intensity={0.6} />
-        <Globe />
-      </Suspense>
+      <ambientLight intensity={2.2} color="#c9ddff" />
+      <directionalLight position={[1, 1, 1]} intensity={1.1} color="#ffffff" />
+      <GlobeMesh />
+      {/* Drag to spin (left or right button); idle auto-rotate; no zoom/pan so the page still scrolls. */}
+      <OrbitControls
+        makeDefault
+        enablePan={false}
+        enableZoom={false}
+        autoRotate
+        autoRotateSpeed={0.4}
+        rotateSpeed={0.5}
+        enableDamping
+        dampingFactor={0.08}
+        mouseButtons={{
+          LEFT: THREE.MOUSE.ROTATE,
+          MIDDLE: THREE.MOUSE.DOLLY,
+          RIGHT: THREE.MOUSE.ROTATE,
+        }}
+      />
     </Canvas>
   )
 }
