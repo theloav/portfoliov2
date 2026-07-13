@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, PerformanceMonitor, Stars } from '@react-three/drei'
 import * as THREE from 'three'
 import ThreeGlobe from 'three-globe'
@@ -25,7 +25,7 @@ const PAIRS = [
   [7, 2], [6, 1], [5, 4], [9, 7], [3, 4],
 ]
 
-function GlobeMesh() {
+function GlobeMesh({ apiRef }) {
   const userRef = useRef([]) // live user-triggered strikes
   const timeouts = useRef([])
 
@@ -103,19 +103,10 @@ function GlobeMesh() {
     globe.pointsData([...NODES, ...u.map((e) => e.pt)])
   }
 
-  // Click (not drag) anywhere on the earth → strike that exact lat/lng:
-  // two red arcs race in from random cities, a red marker + fast danger
-  // ring flare at the impact point, then it all fades out.
-  const onClick = (e) => {
-    if (e.delta > 6) return // that was an orbit drag, not a click
-    e.stopPropagation()
-    const local = globe.worldToLocal(e.point.clone())
-    const r = local.length()
-    if (!r) return
-    const lat = 90 - (Math.acos(local.y / r) * 180) / Math.PI
-    const lng = ((90 - (Math.atan2(local.z, local.x) * 180) / Math.PI + 540) % 360) - 180
-
-    const srcs = [...NODES].sort(() => Math.random() - 0.5).slice(0, 2)
+  // Land a strike at lat/lng: red danger ring + impact marker, plus
+  // `nArcs` red arcs racing in from random cities. Fades after 4.5s.
+  const strikeAt = (lat, lng, nArcs = 2) => {
+    const srcs = [...NODES].sort(() => Math.random() - 0.5).slice(0, nArcs)
     const entry = {
       arcs: srcs.map((s) => ({
         startLat: s.lat,
@@ -137,7 +128,113 @@ function GlobeMesh() {
     )
   }
 
+  // Expose the globe + strike API so the UFO can bombard the planet too.
+  useEffect(() => {
+    if (apiRef) apiRef.current = { globe, strike: strikeAt }
+    return () => {
+      if (apiRef) apiRef.current = null
+    }
+  })
+
+  // Click (not drag) anywhere on the earth → strike that exact lat/lng.
+  const onClick = (e) => {
+    if (e.delta > 6) return // that was an orbit drag, not a click
+    e.stopPropagation()
+    const local = globe.worldToLocal(e.point.clone())
+    const r = local.length()
+    if (!r) return
+    const lat = 90 - (Math.acos(local.y / r) * 180) / Math.PI
+    const lng = ((90 - (Math.atan2(local.z, local.x) * 180) / Math.PI + 540) % 360) - 180
+    strikeAt(lat, lng, 2)
+  }
+
   return <primitive object={globe} onClick={onClick} />
+}
+
+/**
+ * Alien raider: a saucer orbits the planet and every few seconds fires a
+ * flickering red beam at a random spot — which lands as a real strike
+ * (danger ring + impact marker) on the globe below.
+ */
+function Ufo({ apiRef }) {
+  const grp = useRef()
+  const beamRef = useRef()
+  const s = useRef({ nextAt: 2.2, until: 0, target: new THREE.Vector3() })
+
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime
+    const g = grp.current
+    if (!g) return
+
+    // tilted, wandering orbit outside the atmosphere
+    const R = 152
+    g.position.set(
+      Math.cos(t * 0.3) * R,
+      58 * Math.sin(t * 0.17) + 12,
+      Math.sin(t * 0.3) * R
+    )
+    g.rotation.y = t * 1.6
+    g.rotation.z = Math.sin(t * 0.8) * 0.1
+
+    const st = s.current
+    const api = apiRef.current
+    if (api && t > st.nextAt) {
+      const lat = -55 + Math.random() * 115
+      const lng = -180 + Math.random() * 360
+      const c = api.globe.getCoords(lat, lng, 0.02)
+      st.target.copy(api.globe.localToWorld(new THREE.Vector3(c.x, c.y, c.z)))
+      api.strike(lat, lng, 0) // beam is the delivery — no arcs needed
+      st.until = t + 0.9
+      st.nextAt = t + 3 + Math.random() * 3.5
+    }
+
+    const beam = beamRef.current
+    if (beam) {
+      const active = t < st.until
+      beam.visible = active
+      if (active) {
+        beam.geometry.setFromPoints([g.position, st.target])
+        beam.material.opacity = 0.35 + Math.random() * 0.55 // electric flicker
+      }
+    }
+  })
+
+  return (
+    <>
+      <group ref={grp}>
+        {/* hull */}
+        <mesh scale={[1, 0.28, 1]}>
+          <sphereGeometry args={[7, 24, 16]} />
+          <meshStandardMaterial color="#93a5bb" metalness={0.85} roughness={0.35} />
+        </mesh>
+        {/* glass dome */}
+        <mesh position={[0, 1.5, 0]} scale={[1, 0.78, 1]}>
+          <sphereGeometry args={[3.1, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          <meshStandardMaterial
+            color="#38c2ff"
+            emissive="#1e7fb8"
+            emissiveIntensity={0.9}
+            transparent
+            opacity={0.75}
+            roughness={0.15}
+            metalness={0.2}
+          />
+        </mesh>
+        {/* glowing anti-grav ring */}
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[5.6, 0.35, 10, 40]} />
+          <meshBasicMaterial color="#00ff9c" />
+        </mesh>
+        <pointLight color="#00ff9c" intensity={5} distance={45} />
+      </group>
+
+      {/* attack beam */}
+      <line ref={beamRef} visible={false}>
+        <bufferGeometry />
+        <lineBasicMaterial color="#ff4d5e" transparent opacity={0.8} />
+      </line>
+    </>
+  )
 }
 
 /**
@@ -147,6 +244,7 @@ function GlobeMesh() {
 export default function ThreatGlobe({ active = true }) {
   // Start modest; PerformanceMonitor scales down further if frames drop.
   const [dpr, setDpr] = useState(1.4)
+  const apiRef = useRef(null) // GlobeMesh strike API, shared with the UFO
 
   return (
     <Canvas
@@ -165,7 +263,8 @@ export default function ThreatGlobe({ active = true }) {
       <directionalLight position={[1, 1, 1]} intensity={1.1} color="#ffffff" />
       {/* faint starfield drifting behind the earth */}
       <Stars radius={300} depth={60} count={1400} factor={3.2} saturation={0} fade speed={0.5} />
-      <GlobeMesh />
+      <GlobeMesh apiRef={apiRef} />
+      <Ufo apiRef={apiRef} />
       {/* Drag to spin (left or right button); idle auto-rotate; no zoom/pan so the page still scrolls. */}
       <OrbitControls
         makeDefault

@@ -45,7 +45,7 @@ export default function CyberBackground() {
       x: offscreen ? (Math.random() < 0.5 ? -70 : w + 70) : Math.random() * w,
       y: 50 + Math.random() * h * 0.6,
       dir: Math.random() < 0.5 ? -1 : 1,
-      sp: 0.35 + Math.random() * 0.45,
+      sp: 0.9 + Math.random() * 0.55,
       ph: Math.random() * Math.PI * 2,
       w: 22 + Math.random() * 12,
       zap: null, // { node } or { x, y }, plus t = frames left
@@ -256,28 +256,89 @@ export default function CyberBackground() {
           if (u.zap.t <= 0) u.zap = null
         }
 
-        // saucer: rim glow → body → dome → running lights
+        // ── saucer (drawn back-to-front for depth) ──
         const bw = u.w
-        ctx.strokeStyle = 'rgba(56,194,255,0.4)'
-        ctx.lineWidth = 1
+
+        // ion trail streaking behind
+        const tx0 = u.x - u.dir * bw * 2.1
+        const trail = ctx.createLinearGradient(tx0, uy, u.x - u.dir * bw * 0.4, uy)
+        trail.addColorStop(0, 'rgba(56,194,255,0)')
+        trail.addColorStop(1, 'rgba(56,194,255,0.45)')
+        ctx.strokeStyle = trail
+        ctx.lineWidth = 2
         ctx.beginPath()
-        ctx.ellipse(u.x, uy, bw * 0.5, bw * 0.17, 0, 0, Math.PI * 2)
+        ctx.moveTo(tx0, uy)
+        ctx.lineTo(u.x - u.dir * bw * 0.4, uy)
         ctx.stroke()
-        ctx.fillStyle = 'rgba(150,165,185,0.5)'
+
+        // soft anti-grav glow beneath the hull
+        const glow = ctx.createRadialGradient(u.x, uy + 5, 0, u.x, uy + 5, bw * 0.8)
+        glow.addColorStop(0, 'rgba(0,255,156,0.16)')
+        glow.addColorStop(1, 'rgba(0,255,156,0)')
+        ctx.fillStyle = glow
         ctx.beginPath()
-        ctx.ellipse(u.x, uy, bw * 0.5, bw * 0.17, 0, 0, Math.PI * 2)
+        ctx.ellipse(u.x, uy + 6, bw * 0.8, bw * 0.34, 0, 0, Math.PI * 2)
         ctx.fill()
-        ctx.fillStyle = 'rgba(56,194,255,0.3)'
+
+        // lower hull (dark undercarriage)
+        ctx.fillStyle = 'rgba(30,42,58,0.85)'
         ctx.beginPath()
-        ctx.ellipse(u.x, uy - 3, bw * 0.28, bw * 0.24, 0, Math.PI, 0)
+        ctx.ellipse(u.x, uy + 2.5, bw * 0.34, bw * 0.1, 0, 0, Math.PI * 2)
         ctx.fill()
-        for (let i = -1; i <= 1; i++) {
-          const on = ((frame >> 4) % 3) === i + 1
-          ctx.fillStyle = on ? '#00ff9c' : 'rgba(0,255,156,0.25)'
+
+        // main disc — metallic sheen
+        const hull = ctx.createLinearGradient(u.x, uy - bw * 0.18, u.x, uy + bw * 0.18)
+        hull.addColorStop(0, 'rgba(205,220,238,0.9)')
+        hull.addColorStop(0.5, 'rgba(120,138,160,0.85)')
+        hull.addColorStop(1, 'rgba(55,70,92,0.9)')
+        ctx.fillStyle = hull
+        ctx.beginPath()
+        ctx.ellipse(u.x, uy, bw * 0.52, bw * 0.16, 0, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.strokeStyle = 'rgba(56,194,255,0.55)'
+        ctx.lineWidth = 1
+        ctx.stroke()
+
+        // glass dome + specular glint + pilot glow
+        const dome = ctx.createLinearGradient(u.x, uy - bw * 0.3, u.x, uy)
+        dome.addColorStop(0, 'rgba(140,225,255,0.55)')
+        dome.addColorStop(1, 'rgba(56,194,255,0.12)')
+        ctx.fillStyle = dome
+        ctx.beginPath()
+        ctx.ellipse(u.x, uy - 2.5, bw * 0.26, bw * 0.22, 0, Math.PI, 0)
+        ctx.fill()
+        ctx.strokeStyle = 'rgba(180,235,255,0.5)'
+        ctx.lineWidth = 0.8
+        ctx.beginPath()
+        ctx.ellipse(u.x - bw * 0.08, uy - bw * 0.14, bw * 0.09, bw * 0.05, -0.5, 0, Math.PI * 2)
+        ctx.stroke()
+        // the operator inside
+        ctx.fillStyle = ((frame >> 3) & 1) ? 'rgba(0,255,156,0.85)' : 'rgba(0,255,156,0.45)'
+        ctx.beginPath()
+        ctx.arc(u.x, uy - 5, 1.5, 0, Math.PI * 2)
+        ctx.fill()
+
+        // chasing rim lights (rotating light band)
+        for (let i = 0; i < 5; i++) {
+          const on = ((frame >> 3) + i) % 5 === 0
+          const lx = u.x + (i - 2) * bw * 0.2
+          ctx.fillStyle = on ? '#00ff9c' : 'rgba(0,255,156,0.22)'
           ctx.beginPath()
-          ctx.arc(u.x + i * bw * 0.24, uy + 2.5, 1.3, 0, Math.PI * 2)
+          ctx.arc(lx, uy + 2.2, on ? 1.5 : 1.1, 0, Math.PI * 2)
           ctx.fill()
         }
+
+        // antenna beacon
+        ctx.strokeStyle = 'rgba(180,235,255,0.5)'
+        ctx.lineWidth = 0.8
+        ctx.beginPath()
+        ctx.moveTo(u.x, uy - bw * 0.22)
+        ctx.lineTo(u.x, uy - bw * 0.32)
+        ctx.stroke()
+        ctx.fillStyle = ((frame >> 4) & 1) ? '#ff4d5e' : 'rgba(255,77,94,0.35)'
+        ctx.beginPath()
+        ctx.arc(u.x, uy - bw * 0.34, 1.2, 0, Math.PI * 2)
+        ctx.fill()
       }
 
       // ── sonar ripples ──

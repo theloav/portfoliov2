@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * Dual-ring operator cursor. Dot tracks instantly; ring eases behind it and
- * expands over interactive elements. Desktop / fine-pointer only.
+ * Viewfinder cursor: corner-bracket frame + center crosshair move as one rigid
+ * unit; the frame opens over interactive elements. Desktop / fine-pointer only.
  *
  * Both elements are ALWAYS rendered so their refs exist before the effect runs
  * (v1 crash lesson). `has-cursor` — which hides the native cursor — is only
@@ -20,36 +20,25 @@ export default function CustomCursor() {
     const ring = ringRef.current
     if (!dot || !ring) return
 
-    let mx = window.innerWidth / 2
-    let my = window.innerHeight / 2
-    let rx = mx
-    let ry = my
-    let raf
-
+    const mx = window.innerWidth / 2
+    const my = window.innerHeight / 2
     dot.style.transform = `translate(${mx}px, ${my}px)`
-    ring.style.transform = `translate(${rx}px, ${ry}px)`
+    ring.style.transform = `translate(${mx}px, ${my}px)`
 
+    // Frame and crosshair move as ONE rigid viewfinder — no lag between them.
     const onMove = (e) => {
-      mx = e.clientX
-      my = e.clientY
-      dot.style.transform = `translate(${mx}px, ${my}px)`
+      const t = `translate(${e.clientX}px, ${e.clientY}px)`
+      dot.style.transform = t
+      ring.style.transform = t
       const interactive = e.target?.closest?.('a, button, [data-cursor], input, textarea')
       ring.classList.toggle('cursor-ring--active', !!interactive)
-    }
-    const loop = () => {
-      rx += (mx - rx) * 0.18
-      ry += (my - ry) * 0.18
-      ring.style.transform = `translate(${rx}px, ${ry}px)`
-      raf = requestAnimationFrame(loop)
     }
 
     document.body.classList.add('has-cursor')
     window.addEventListener('mousemove', onMove)
-    loop()
 
     return () => {
       window.removeEventListener('mousemove', onMove)
-      if (raf) cancelAnimationFrame(raf)
       document.body.classList.remove('has-cursor')
     }
   }, [])
