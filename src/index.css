@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-base-900 text-slate-200 font-sans antialiased;
+    /* Subtle operator-console vignette + grid backdrop */
+    background-image:
+      radial-gradient(circle at 50% -10%, rgba(56, 194, 255, 0.06), transparent 55%),
+      radial-gradient(circle at 90% 100%, rgba(0, 255, 156, 0.05), transparent 45%);
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background: rgba(0, 255, 156, 0.25);
+    color: #eafff6;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #05060a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1a2432;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #263241;
+  }
+}
+
+@layer components {
+  /* Faint HUD grid you can drop onto any section */
+  .hud-grid {
+    background-image:
+      linear-gradient(rgba(56, 194, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56, 194, 255, 0.04) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .text-glow-term {
+    text-shadow: 0 0 14px rgba(0, 255, 156, 0.55), 0 0 3px rgba(0, 255, 156, 0.8);
+  }
+  .text-glow-cyan {
+    text-shadow: 0 0 14px rgba(56, 194, 255, 0.55), 0 0 3px rgba(56, 194, 255, 0.8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
