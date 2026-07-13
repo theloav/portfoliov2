@@ -26,6 +26,7 @@ export default function CyberBackground() {
     const nodes = []
     const packets = []
     const ripples = []
+    const ufos = []
     const pointer = { x: -1e4, y: -1e4 }
 
     const LINK = 130
@@ -40,6 +41,16 @@ export default function CyberBackground() {
       hot: Math.random() < 0.16, // a few terminal-green "compromised" nodes
     })
 
+    const spawnUfo = (offscreen) => ({
+      x: offscreen ? (Math.random() < 0.5 ? -70 : w + 70) : Math.random() * w,
+      y: 50 + Math.random() * h * 0.6,
+      dir: Math.random() < 0.5 ? -1 : 1,
+      sp: 0.35 + Math.random() * 0.45,
+      ph: Math.random() * Math.PI * 2,
+      w: 22 + Math.random() * 12,
+      zap: null, // { node } or { x, y }, plus t = frames left
+    })
+
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
       w = window.innerWidth
@@ -52,6 +63,9 @@ export default function CyberBackground() {
       const target = Math.max(24, Math.min(70, Math.round((w * h) / 26000)))
       while (nodes.length < target) nodes.push(spawnNode())
       nodes.length = target
+      const nUfos = w < 640 ? 2 : 3
+      while (ufos.length < nUfos) ufos.push(spawnUfo(false))
+      ufos.length = nUfos
     }
 
     const firePacket = () => {
@@ -75,6 +89,17 @@ export default function CyberBackground() {
       // a ping also flushes a burst of packets — feels alive on tap
       firePacket()
       firePacket()
+      // ...and the nearest UFO opens fire on the tap point
+      let best = null
+      let bestD = Infinity
+      for (const u of ufos) {
+        const d = Math.hypot(u.x - e.clientX, u.y - e.clientY)
+        if (d < bestD) {
+          bestD = d
+          best = u
+        }
+      }
+      if (best) best.zap = { x: e.clientX, y: e.clientY, t: 28 }
     }
 
     const step = () => {
@@ -179,6 +204,81 @@ export default function CyberBackground() {
         ctx.fill()
       }
       if (frame % 110 === 0) firePacket()
+
+      // ── UFOs cruising the mesh, occasionally hacking a node ──
+      for (const u of ufos) {
+        u.x += u.dir * u.sp
+        u.ph += 0.02
+        const uy = u.y + Math.sin(u.ph) * 10
+        if (u.x < -90 || u.x > w + 90) {
+          Object.assign(u, spawnUfo(true))
+          u.x = u.dir === 1 ? -70 : w + 70
+          continue
+        }
+
+        // random raid: lock onto a nearby node and drain it
+        if (!u.zap && Math.random() < 0.0035) {
+          let tgt = null
+          let td = Infinity
+          for (const n of nodes) {
+            const d = Math.hypot(n.x - u.x, n.y - uy)
+            if (d < td) {
+              td = d
+              tgt = n
+            }
+          }
+          if (tgt && td < 300) u.zap = { node: tgt, t: 30 }
+        }
+
+        // attack beam
+        if (u.zap) {
+          u.zap.t--
+          const tx = u.zap.node ? u.zap.node.x : u.zap.x
+          const ty = u.zap.node ? u.zap.node.y : u.zap.y
+          const flick = 0.35 + Math.random() * 0.4
+          const grad = ctx.createLinearGradient(u.x, uy + 4, tx, ty)
+          grad.addColorStop(0, `rgba(0,255,156,${flick})`)
+          grad.addColorStop(1, `rgba(255,77,94,${flick})`)
+          ctx.strokeStyle = grad
+          ctx.lineWidth = 1.4
+          ctx.beginPath()
+          ctx.moveTo(u.x, uy + 4)
+          // slight jitter halfway makes it feel electric
+          ctx.lineTo((u.x + tx) / 2 + (Math.random() - 0.5) * 7, (uy + ty) / 2 + (Math.random() - 0.5) * 7)
+          ctx.lineTo(tx, ty)
+          ctx.stroke()
+          // impact flare
+          ctx.fillStyle = `rgba(255,77,94,${flick})`
+          ctx.beginPath()
+          ctx.arc(tx, ty, 2.6 + Math.random() * 1.6, 0, Math.PI * 2)
+          ctx.fill()
+          if (u.zap.node) u.zap.node.hot = true // node is now compromised
+          if (u.zap.t <= 0) u.zap = null
+        }
+
+        // saucer: rim glow → body → dome → running lights
+        const bw = u.w
+        ctx.strokeStyle = 'rgba(56,194,255,0.4)'
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.ellipse(u.x, uy, bw * 0.5, bw * 0.17, 0, 0, Math.PI * 2)
+        ctx.stroke()
+        ctx.fillStyle = 'rgba(150,165,185,0.5)'
+        ctx.beginPath()
+        ctx.ellipse(u.x, uy, bw * 0.5, bw * 0.17, 0, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = 'rgba(56,194,255,0.3)'
+        ctx.beginPath()
+        ctx.ellipse(u.x, uy - 3, bw * 0.28, bw * 0.24, 0, Math.PI, 0)
+        ctx.fill()
+        for (let i = -1; i <= 1; i++) {
+          const on = ((frame >> 4) % 3) === i + 1
+          ctx.fillStyle = on ? '#00ff9c' : 'rgba(0,255,156,0.25)'
+          ctx.beginPath()
+          ctx.arc(u.x + i * bw * 0.24, uy + 2.5, 1.3, 0, Math.PI * 2)
+          ctx.fill()
+        }
+      }
 
       // ── sonar ripples ──
       for (let i = ripples.length - 1; i >= 0; i--) {

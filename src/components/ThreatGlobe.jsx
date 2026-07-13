@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, PerformanceMonitor, Stars } from '@react-three/drei'
 import * as THREE from 'three'
@@ -26,14 +26,19 @@ const PAIRS = [
 ]
 
 function GlobeMesh() {
-  const ref = useRef()
+  const userRef = useRef([]) // live user-triggered strikes
+  const timeouts = useRef([])
 
-  const globe = useMemo(() => {
+  const { globe, baseArcs, baseRings } = useMemo(() => {
     const arcs = PAIRS.map(([a, b]) => ({
       startLat: NODES[a].lat,
       startLng: NODES[a].lng,
       endLat: NODES[b].lat,
       endLng: NODES[b].lng,
+    }))
+    const rings = NODES.map((n) => ({
+      ...n,
+      rgb: n.color === '#ff6b3d' ? '255,107,61' : '0,255,156',
     }))
 
     const g = new ThreeGlobe({ animateIn: false })
@@ -54,20 +59,25 @@ function GlobeMesh() {
       .pointAltitude(0.012)
       .pointRadius(0.32)
       .pointResolution(18)
-      // attack arcs — animated dash "travels" along the line
+      // attack arcs — animated dash "travels" along the line.
+      // User strikes render red/orange, faster, and start instantly.
       .arcsData(arcs)
-      .arcColor(() => ['rgba(0,255,156,0)', '#00ff9c', 'rgba(56,194,255,0.1)'])
-      .arcStroke(0.5)
+      .arcColor((d) =>
+        d.user
+          ? ['rgba(255,77,94,0)', '#ff4d5e', 'rgba(255,107,61,0.25)']
+          : ['rgba(0,255,156,0)', '#00ff9c', 'rgba(56,194,255,0.1)']
+      )
+      .arcStroke((d) => (d.user ? 0.8 : 0.5))
       .arcDashLength(0.45)
-      .arcDashGap(1.6)
-      .arcDashInitialGap(() => Math.random() * 5)
-      .arcDashAnimateTime(2200)
+      .arcDashGap((d) => (d.user ? 0.8 : 1.6))
+      .arcDashInitialGap((d) => (d.user ? 0 : Math.random() * 5))
+      .arcDashAnimateTime((d) => (d.user ? 1300 : 2200))
       .arcAltitudeAutoScale(0.45)
       // radar impact rings pulsing out of every city (orange at home base)
-      .ringsData(NODES.map((n) => ({ ...n, rgb: n.color === '#ff6b3d' ? '255,107,61' : '0,255,156' })))
+      .ringsData(rings)
       .ringColor((d) => (t) => `rgba(${d.rgb},${Math.max(0, 0.55 * (1 - t))})`)
-      .ringMaxRadius(3.6)
-      .ringPropagationSpeed(1.1)
+      .ringMaxRadius((d) => (d.user ? 5 : 3.6))
+      .ringPropagationSpeed((d) => (d.user ? 2.2 : 1.1))
       .ringRepeatPeriod(() => 1100 + Math.random() * 900)
       .ringAltitude(0.011)
 
@@ -81,10 +91,53 @@ function GlobeMesh() {
     // Face Asia/India toward the camera.
     g.rotation.y = -Math.PI * 0.52
     g.rotation.x = 0.32
-    return g
+    return { globe: g, baseArcs: arcs, baseRings: rings }
   }, [])
 
-  return <primitive ref={ref} object={globe} />
+  useEffect(() => () => timeouts.current.forEach(clearTimeout), [])
+
+  const refresh = () => {
+    const u = userRef.current
+    globe.arcsData([...baseArcs, ...u.flatMap((e) => e.arcs)])
+    globe.ringsData([...baseRings, ...u.map((e) => e.ring)])
+    globe.pointsData([...NODES, ...u.map((e) => e.pt)])
+  }
+
+  // Click (not drag) anywhere on the earth → strike that exact lat/lng:
+  // two red arcs race in from random cities, a red marker + fast danger
+  // ring flare at the impact point, then it all fades out.
+  const onClick = (e) => {
+    if (e.delta > 6) return // that was an orbit drag, not a click
+    e.stopPropagation()
+    const local = globe.worldToLocal(e.point.clone())
+    const r = local.length()
+    if (!r) return
+    const lat = 90 - (Math.acos(local.y / r) * 180) / Math.PI
+    const lng = ((90 - (Math.atan2(local.z, local.x) * 180) / Math.PI + 540) % 360) - 180
+
+    const srcs = [...NODES].sort(() => Math.random() - 0.5).slice(0, 2)
+    const entry = {
+      arcs: srcs.map((s) => ({
+        startLat: s.lat,
+        startLng: s.lng,
+        endLat: lat,
+        endLng: lng,
+        user: true,
+      })),
+      ring: { lat, lng, rgb: '255,77,94', user: true },
+      pt: { lat, lng, color: '#ff4d5e' },
+    }
+    userRef.current.push(entry)
+    refresh()
+    timeouts.current.push(
+      setTimeout(() => {
+        userRef.current = userRef.current.filter((x) => x !== entry)
+        refresh()
+      }, 4500)
+    )
+  }
+
+  return <primitive object={globe} onClick={onClick} />
 }
 
 /**

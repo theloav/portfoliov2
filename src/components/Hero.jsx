@@ -90,7 +90,7 @@ export default function Hero() {
                 <Suspense fallback={<GlobeFallback />}>
                   <ThreatGlobe active={inView} />
                   <span className="pointer-events-none absolute bottom-2 right-2 hidden font-mono text-[10px] tracking-widest text-muted/60 lg:block">
-                    drag to rotate ↻
+                    drag to rotate ↻ · click to strike ✛
                   </span>
                 </Suspense>
               ) : (
