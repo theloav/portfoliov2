@@ -1,10 +1,10 @@
 import { useRef, useState } from 'react'
 import emailjs from '@emailjs/browser'
-import { FiMail, FiGithub, FiLinkedin, FiMapPin, FiSend, FiCheckCircle, FiAlertCircle } from 'react-icons/fi'
+import { FiMail, FiGithub, FiLinkedin, FiMapPin, FiSend, FiCheckCircle, FiAlertCircle, FiDownload } from 'react-icons/fi'
 import { FaMediumM } from 'react-icons/fa'
 import SectionTitle from './SectionTitle'
 import Reveal from './Reveal'
-import { PROFILE, SOCIALS, EMAILJS } from '../data'
+import { PROFILE, SOCIALS, EMAILJS, RESUME } from '../data'
 
 const LINKS = [
   { Icon: FiMail, label: 'Email', value: PROFILE.email, href: SOCIALS.email },
@@ -43,10 +43,17 @@ export default function Contact() {
         {/* channels */}
         <Reveal className="lg:col-span-2">
           <div className="panel h-full p-7">
-            <p className="mb-6 leading-relaxed text-slate-400">
+            <p className="mb-5 leading-relaxed text-slate-400">
               Open to security engineering roles, red-team collaborations, and AI-security research.
               Drop a line — encrypted or otherwise.
             </p>
+            <a
+              href={RESUME.href}
+              download={RESUME.filename}
+              className="btn-term mb-6 w-full justify-center"
+            >
+              <FiDownload /> Download Résumé (PDF)
+            </a>
             <ul className="space-y-3">
               {LINKS.map(({ Icon, label, value, href }) => {
                 const body = (

@@ -22,6 +22,12 @@ export const SOCIALS = {
   email: 'mailto:shrivarshan81@gmail.com',
 }
 
+// Served from public/. `download` attr sets the saved filename.
+export const RESUME = {
+  href: '/Shrivarshan-Kasi-Arul-Resume.pdf',
+  filename: 'Shrivarshan-Kasi-Arul-Resume.pdf',
+}
+
 export const EMAILJS = {
   serviceId: 'service_y9sqms7',
   templateId: 'template_9hqe4nr',

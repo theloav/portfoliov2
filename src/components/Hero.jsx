@@ -2,12 +2,12 @@ import { Suspense, lazy, useEffect, useRef } from 'react'
 import { useInView } from 'framer-motion'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { FiArrowDownRight, FiGithub, FiLinkedin } from 'react-icons/fi'
+import { FiArrowDownRight, FiGithub, FiLinkedin, FiDownload } from 'react-icons/fi'
 import { FaMediumM } from 'react-icons/fa'
 import ScrambleText from './ScrambleText'
 import ErrorBoundary from './ErrorBoundary'
 import { useCanRenderWebGL, useReducedMotion } from '../lib/hooks'
-import { PROFILE, SOCIALS } from '../data'
+import { PROFILE, SOCIALS, RESUME } from '../data'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -90,7 +90,7 @@ export default function Hero() {
           SYSTEM ONLINE // STATUS: OPERATIONAL
         </p>
 
-        <h1 className="font-display text-[13vw] font-bold leading-[0.9] tracking-tight text-slate-50 sm:text-7xl md:text-8xl">
+        <h1 className="font-display text-[clamp(2.6rem,12vw,5.5rem)] font-bold leading-[0.9] tracking-tight text-slate-50 sm:text-7xl md:text-8xl">
           SHRIVARSHAN
         </h1>
 
@@ -107,6 +107,9 @@ export default function Hero() {
         <div className="mt-9 flex flex-wrap items-center gap-3">
           <a href="#projects" className="btn-term">
             <FiArrowDownRight /> View Operations
+          </a>
+          <a href={RESUME.href} download={RESUME.filename} className="btn-ghost">
+            <FiDownload /> Resume
           </a>
           <a href="#contact" className="btn-ghost">Establish Contact</a>
 

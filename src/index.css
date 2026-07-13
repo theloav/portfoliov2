@@ -10,10 +10,14 @@
   html {
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+    /* smooth native momentum on iOS when Lenis leaves touch to the browser */
+    -webkit-overflow-scrolling: touch;
   }
 
   body {
     @apply bg-base-900 text-slate-200 font-sans antialiased;
+    overflow-x: hidden;
     /* Subtle operator-console vignette + grid backdrop */
     background-image:
       radial-gradient(circle at 50% -10%, rgba(56, 194, 255, 0.06), transparent 55%),
