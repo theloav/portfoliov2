@@ -42,7 +42,8 @@ function Arc({ from, to, color, offset }) {
     const a = toVec3(from[0], from[1])
     const b = toVec3(to[0], to[1])
     const mid = a.clone().add(b).multiplyScalar(0.5)
-    const lift = 1 + a.distanceTo(b) * 0.28
+    // Cap the arc height so long arcs never shoot outside the camera frustum.
+    const lift = Math.min(1.2, 1 + a.distanceTo(b) * 0.12)
     mid.normalize().multiplyScalar(R * lift)
     const c = new THREE.QuadraticBezierCurve3(a, mid, b)
     return { points: c.getPoints(48), curve: c }
@@ -115,7 +116,7 @@ function Globe() {
 export default function ThreatGlobe() {
   return (
     <Canvas
-      camera={{ position: [0, 0, 4.4], fov: 45 }}
+      camera={{ position: [0, 0, 6.5], fov: 42 }}
       dpr={[1, 1.8]}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       style={{ pointerEvents: 'none' }}

@@ -92,7 +92,7 @@ export default function Contact() {
               <span className="h-2.5 w-2.5 rounded-full bg-danger/70" />
               <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/70" />
               <span className="h-2.5 w-2.5 rounded-full bg-term/70" />
-              <span className="ml-2 font-mono text-xs text-muted">operator@theloav: ~/send_message</span>
+              <span className="ml-2 font-mono text-xs text-muted">operator@shrivarshan: ~/send_message</span>
             </div>
 
             <form ref={formRef} onSubmit={submit} className="space-y-4 p-6">

@@ -38,7 +38,7 @@ export default function Nav() {
     >
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5">
         <a href="#top" className="group font-mono text-sm font-semibold tracking-widest text-slate-200">
-          <span className="text-term">~/</span>theloav
+          <span className="text-term">~/</span>shrivarshan
           <span className="ml-1 animate-pulse text-term">_</span>
         </a>
 

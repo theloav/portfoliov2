@@ -9,10 +9,37 @@ export default function About() {
     <section id="about" className="relative mx-auto max-w-6xl scroll-mt-24 px-5 py-28">
       <SectionTitle index="01" eyebrow="whoami" title="Operator" highlight="Dossier" />
 
-      <div className="grid gap-6 lg:grid-cols-5">
+      <div className="grid gap-6 lg:grid-cols-12">
+        {/* photo */}
+        <Reveal className="lg:col-span-5">
+          <div className="bracket group relative h-full min-h-[420px] overflow-hidden rounded-xl border border-white/[0.08]">
+            <img
+              src="/profile.jpg"
+              alt={PROFILE.name}
+              loading="lazy"
+              className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.03] [filter:grayscale(0.12)_contrast(1.05)]"
+            />
+            {/* theme wash + scanlines */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-base-900 via-base-900/20 to-transparent" />
+            <div className="pointer-events-none absolute inset-0 mix-blend-overlay [background:linear-gradient(120deg,rgba(0,255,156,0.12),transparent_40%,rgba(56,194,255,0.12))]" />
+            <div className="pointer-events-none absolute inset-0 opacity-30 [background:repeating-linear-gradient(0deg,transparent,transparent_3px,rgba(0,255,156,0.05)_3px,rgba(0,255,156,0.05)_4px)]" />
+
+            {/* overlays */}
+            <span className="absolute left-3 top-3 rounded border border-term/40 bg-base-900/60 px-2 py-0.5 font-mono text-[10px] tracking-widest text-term backdrop-blur-sm">
+              OPERATOR
+            </span>
+            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between font-mono text-[10px] text-muted">
+              <span className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-term" /> LIVE
+              </span>
+              <span className="text-cyan/80">// sakana.ai · field kit</span>
+            </div>
+          </div>
+        </Reveal>
+
         {/* bio */}
-        <Reveal className="lg:col-span-3">
-          <div className="bracket panel relative h-full p-7">
+        <Reveal delay={0.1} className="lg:col-span-7">
+          <div className="panel relative h-full p-7">
             <p className="mb-2 font-mono text-xs text-term">// profile</p>
             <h3 className="font-display text-2xl font-semibold text-slate-100">{PROFILE.name}</h3>
             <p className="mb-5 font-mono text-sm text-cyan">
@@ -36,34 +63,34 @@ export default function About() {
             </div>
           </div>
         </Reveal>
-
-        {/* certs */}
-        <Reveal delay={0.1} className="lg:col-span-2">
-          <div className="panel h-full p-7">
-            <p className="mb-5 font-mono text-xs text-term">// certifications</p>
-            <ul className="space-y-2.5">
-              {CERTS.map((c) => (
-                <li
-                  key={c.name}
-                  className="flex items-center gap-3 rounded-lg border border-white/[0.05] bg-white/[0.02] px-3.5 py-2.5"
-                >
-                  {c.done ? (
-                    <FiCheckCircle className="shrink-0 text-term" />
-                  ) : (
-                    <FiClock className="shrink-0 text-danger" />
-                  )}
-                  <div className="min-w-0">
-                    <p className={`font-mono text-sm font-semibold ${c.done ? 'text-slate-200' : 'text-danger'}`}>
-                      {c.name}
-                    </p>
-                    <p className="truncate text-xs text-muted">{c.full}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Reveal>
       </div>
+
+      {/* certs — full width */}
+      <Reveal delay={0.05} className="mt-6">
+        <div className="panel p-7">
+          <p className="mb-5 font-mono text-xs text-term">// certifications</p>
+          <ul className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+            {CERTS.map((c) => (
+              <li
+                key={c.name}
+                className="flex items-center gap-3 rounded-lg border border-white/[0.05] bg-white/[0.02] px-3.5 py-2.5"
+              >
+                {c.done ? (
+                  <FiCheckCircle className="shrink-0 text-term" />
+                ) : (
+                  <FiClock className="shrink-0 text-danger" />
+                )}
+                <div className="min-w-0">
+                  <p className={`font-mono text-sm font-semibold ${c.done ? 'text-slate-200' : 'text-danger'}`}>
+                    {c.name}
+                  </p>
+                  <p className="truncate text-xs text-muted">{c.full}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </Reveal>
     </section>
   )
 }

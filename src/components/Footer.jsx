@@ -8,8 +8,6 @@ export default function Footer() {
     <footer className="relative border-t border-white/[0.06] px-5 py-10">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
         <p className="font-mono text-xs text-muted">
-          <span className="text-term">~/</span>theloav
-          <span className="mx-2 text-white/20">|</span>
           © {year} Shrivarshan Kasi Arul
         </p>
 
@@ -32,9 +30,7 @@ export default function Footer() {
           ))}
         </div>
 
-        <p className="font-mono text-[11px] text-muted/70">
-          designed &amp; built with <span className="text-danger">♥</span> · secured by design
-        </p>
+        <p className="font-mono text-[11px] text-muted/70">secured by design</p>
       </div>
     </footer>
   )

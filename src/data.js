@@ -167,13 +167,6 @@ export const PROJECTS = [
     desc: 'Modular, pip-installable CLI that tests LLM apps across 5 attack categories / 25 curated cases — prompt injection, persona override, RAG poisoning — with scored results & CI integration.',
     stack: ['Python', 'CLI', 'CI-ready'],
   },
-  {
-    title: 'SAKSHI',
-    tag: 'Agentic DFIR',
-    href: 'https://github.com/theloav/SAKSHI',
-    desc: 'Content-blind, agentic investigation assistant for child-protection units — turns scattered evidence into ranked, court-ready leads without ever ingesting the material. Built for Hac’KP 2026 · Kerala Police Cyberdome.',
-    stack: ['Agentic AI', 'Privacy-by-Design', 'DFIR'],
-  },
 ]
 
 export const ACHIEVEMENTS = [
@@ -188,8 +181,15 @@ export const ACHIEVEMENTS = [
     title: 'AI Security Research — Responsible Disclosures',
     badge: 'Disclosed',
     tone: 'term',
-    desc: 'Discovered and disclosed prompt-injection & safety-bypass flaws in production AI platforms — Sakana AI (recognised & rewarded with official swag: hoodie, caps & notebook), Pokee.ai (persona-override → live infra exfiltration), and Kimi AI (Moonshot AI). Also reported a session vulnerability in TinyTax (UK).',
+    desc: 'Discovered and disclosed prompt-injection & safety-bypass flaws in production AI platforms — Sakana AI (recognised & rewarded with official swag: hoodie, caps & notebook), Pokee.ai (persona-override → live infra exfiltration), and Kimi AI (Moonshot AI).',
     tags: ['Prompt Injection', 'LLM Red Team', 'AI Security', 'Responsible Disclosure'],
+  },
+  {
+    title: 'Session Vulnerability Disclosure — TinyTax (UK)',
+    badge: 'Disclosed',
+    tone: 'cyan',
+    desc: 'Identified and responsibly disclosed a session-management vulnerability in TinyTax (UK), helping harden their authentication flow.',
+    tags: ['Session Security', 'Web AppSec', 'Responsible Disclosure', 'UK'],
   },
   {
     title: 'LDAP Vulnerability Discovery — Humphreys University, USA',

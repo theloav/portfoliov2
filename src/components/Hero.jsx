@@ -27,8 +27,8 @@ export default function Hero() {
   return (
     <section id="top" className="relative flex min-h-[100svh] items-center overflow-hidden">
       {/* 3D centerpiece — right/behind on desktop */}
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center md:justify-end md:pr-[6%]">
-        <div className="h-[70vh] max-h-[640px] w-full max-w-[640px] opacity-90">
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center md:justify-end md:pr-[2%]">
+        <div className="h-[82vh] max-h-[760px] w-full max-w-[720px] opacity-95">
           <ErrorBoundary name="threat-globe" fallback={<GlobeFallback />}>
             {webgl ? (
               <Suspense fallback={<GlobeFallback />}>
